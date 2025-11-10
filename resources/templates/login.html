@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Вход — Пиццерия</title>
+    <style>
+        body { font-family: sans-serif; max-width: 420px; margin: 6rem auto; }
+        h1 { margin-bottom: 1rem; }
+        label { display:block; margin:.5rem 0 .25rem; }
+        input { width:100%; padding:.6rem; box-sizing:border-box; }
+        button { margin-top:1rem; padding:.6rem 1rem; cursor:pointer; }
+    </style>
+</head>
+<body>
+<h1>Вход</h1>
+<form method="post" action="/login">
+    <label>Логин</label>
+    <input type="text" name="username" required>
+    <label>Пароль</label>
+    <input type="password" name="password" required>
+    <button type="submit">Войти</button>
+</form>
+</body>
+</html>

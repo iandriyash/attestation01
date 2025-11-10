@@ -12,6 +12,11 @@ services:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pizzeria_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     build:
@@ -19,7 +24,8 @@ services:
       dockerfile: docker/Dockerfile
     container_name: pizzeria-app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
