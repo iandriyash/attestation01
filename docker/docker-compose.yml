@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pizzeria-db
+    environment:
+      POSTGRES_DB: pizzeria_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: pizzeria-app
+    depends_on:
+      - db
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+
+volumes:
+  db-data:
