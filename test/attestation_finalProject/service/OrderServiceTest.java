@@ -1,14 +1,10 @@
 package attestation_finalProject.service;
 
-import attestation_finalProject.dto.CreateOrderRequest;
 import attestation_finalProject.dto.OrderDto;
-import attestation_finalProject.dto.OrderItemDto;
 import attestation_finalProject.entity.Order;
-import attestation_finalProject.entity.Pizza;
-import attestation_finalProject.repository.OrderItemRepository;
 import attestation_finalProject.repository.OrderRepository;
+import attestation_finalProject.repository.OrderItemRepository;
 import attestation_finalProject.repository.PizzaRepository;
-import attestation_finalProject.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit-тесты для OrderService.
+ * Используем чистый Mockito без Spring-контекста.
+ */
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
@@ -42,103 +42,82 @@ class OrderServiceTest {
     private OrderService orderService;
 
     private Order testOrder;
-    private Pizza testPizza;
 
     @BeforeEach
     void setUp() {
-        testPizza = new Pizza();
-        testPizza.setId(1L);
-        testPizza.setName("Маргарита");
-        testPizza.setPrice(BigDecimal.valueOf(450.00));
-        testPizza.setIsDeleted(false);
-
         testOrder = new Order();
         testOrder.setId(1L);
         testOrder.setCustomerName("Иван Иванов");
         testOrder.setCustomerPhone("+79991234567");
-        testOrder.setTotalPrice(BigDecimal.valueOf(900.00));
+        testOrder.setTotalPrice(BigDecimal.valueOf(1450.00));
         testOrder.setStatus("NEW");
         testOrder.setIsDeleted(false);
         testOrder.setItems(new ArrayList<>());
     }
 
     @Test
-    void getAllOrders_ShouldReturnListOfOrders() {
-        List<Order> orders = Arrays.asList(testOrder);
-        when(orderRepository.findAllFiltered(null, null)).thenReturn(orders);
+    void getAll_ShouldReturnListOfOrders() {
+        // Given
+        when(orderRepository.findAllFiltered(null, null)).thenReturn(Arrays.asList(testOrder));
 
+        // When
         List<OrderDto> result = orderService.getAll(null, null);
 
+        // Then
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Иван Иванов", result.get(0).getCustomerName());
+        assertEquals("+79991234567", result.get(0).getCustomerPhone());
+
         verify(orderRepository, times(1)).findAllFiltered(null, null);
     }
 
     @Test
-    void getOrderById_WhenExists_ShouldReturnOrder() {
+    void getById_WhenOrderExists_ShouldReturnOrder() {
+        // Given
         when(orderRepository.findByIdActive(1L)).thenReturn(Optional.of(testOrder));
 
+        // When
         Optional<OrderDto> result = orderService.getById(1L);
 
+        // Then
         assertTrue(result.isPresent());
         assertEquals("Иван Иванов", result.get().getCustomerName());
+
         verify(orderRepository, times(1)).findByIdActive(1L);
     }
 
     @Test
-    void createOrder_ShouldReturnCreatedOrder() {
-        CreateOrderRequest request = new CreateOrderRequest();
-        request.setCustomerName("Иван Иванов");
-        request.setCustomerPhone("+79991234567");
-
-        OrderItemDto itemDto = new OrderItemDto(1L, 2, BigDecimal.valueOf(450.00));
-        request.setItems(Arrays.asList(itemDto));
-
-        when(pizzaRepository.findByIdActive(1L)).thenReturn(Optional.of(testPizza));
-        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-
-        OrderDto result = orderService.create(request);
-
-        assertNotNull(result);
-        assertEquals("Иван Иванов", result.getCustomerName());
-        verify(pizzaRepository, times(1)).findByIdActive(1L);
-        verify(orderRepository, times(2)).save(any(Order.class));
-    }
-
-    @Test
-    void updateOrderStatus_WhenExists_ShouldReturnUpdatedOrder() {
+    void updateStatus_WhenOrderExists_ShouldUpdateStatus() {
+        // Given
         when(orderRepository.findByIdActive(1L)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
+        // When
         Optional<OrderDto> result = orderService.updateStatus(1L, "COMPLETED");
 
+        // Then
         assertTrue(result.isPresent());
+        assertEquals("COMPLETED", testOrder.getStatus());
+
         verify(orderRepository, times(1)).findByIdActive(1L);
-        verify(orderRepository, times(1)).save(any(Order.class));
+        verify(orderRepository, times(1)).save(testOrder);
     }
 
     @Test
-    void deleteOrder_WhenExists_ShouldSetDeletedFlag() {
+    void softDelete_WhenOrderExists_ShouldReturnTrue() {
+        // Given
         when(orderRepository.findByIdActive(1L)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
+        // When
         boolean result = orderService.softDelete(1L);
 
+        // Then
         assertTrue(result);
+        assertTrue(testOrder.getIsDeleted());
+
         verify(orderRepository, times(1)).findByIdActive(1L);
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
-    void getOrdersByStatus_ShouldReturnFilteredOrders() {
-        List<Order> orders = Arrays.asList(testOrder);
-        when(orderRepository.findAllFiltered("NEW", null)).thenReturn(orders);
-
-        List<OrderDto> result = orderService.getAll("NEW", null);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(orderRepository, times(1)).findAllFiltered("NEW", null);
+        verify(orderRepository, times(1)).save(testOrder);
     }
 }

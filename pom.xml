@@ -12,11 +12,9 @@
     </parent>
 
     <groupId>com.attestation</groupId>
-    <artifactId>attestation03-pizzeria</artifactId>
+    <artifactId>attestation_finalProject</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
-
-    <name>Attestation 03 - Pizzeria</name>
+    <name>Attestation Final Project - Pizzeria</name>
     <description>Spring Boot application for pizzeria management (final attestation)</description>
 
     <properties>
@@ -103,6 +101,13 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
