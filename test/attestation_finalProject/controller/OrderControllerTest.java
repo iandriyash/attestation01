@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +50,7 @@ class OrderControllerTest {
                 "+79991234567",
                 BigDecimal.valueOf(1450.00),
                 "NEW",
-                Instant.now(),
+                LocalDateTime.now(),
                 Arrays.asList(item1, item2)
         );
     }
@@ -144,7 +144,7 @@ class OrderControllerTest {
                 "+79991234567",
                 BigDecimal.valueOf(1450.00),
                 "COMPLETED",
-                Instant.now(),
+                LocalDateTime.now(),
                 testOrder.getItems()
         );
 
