@@ -16,6 +16,12 @@
       </assistant-state>
     </assistants>
   </component>
+  <component name="DBNavigator.Project.DatabaseBrowserManager">
+    <autoscroll-to-editor value="false" />
+    <autoscroll-from-editor value="true" />
+    <show-object-properties value="true" />
+    <loaded-nodes />
+  </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="01c138a3-6df6-4481-a641-d3b4fedb999c">
       <console name="pg16-demo" type="STANDARD" schema="demo" session="Main" />

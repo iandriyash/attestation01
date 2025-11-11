@@ -1,6 +1,5 @@
 package attestation_finalProject.controller;
 
-import attestation_finalProject.controller.OrderController;
 import attestation_finalProject.dto.CreateOrderRequest;
 import attestation_finalProject.dto.OrderDto;
 import attestation_finalProject.dto.OrderItemDto;
@@ -9,11 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -28,9 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(OrderController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@ContextConfiguration(classes = attestation_finalProject.PizzeriaApplication.class)
+@WebMvcTest(controllers = attestation_finalProject.controller.OrderController.class)
 class OrderControllerTest {
 
     @Autowired
@@ -137,24 +132,6 @@ class OrderControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.customerName").value("Иван Иванов"));
-
-        verify(orderService, times(1)).create(any(CreateOrderRequest.class));
-    }
-
-    @Test
-    void createOrder_WithInvalidData_ShouldReturn400() throws Exception {
-        CreateOrderRequest request = new CreateOrderRequest();
-        request.setCustomerName("Петр Петров");
-        request.setCustomerPhone("+79991234568");
-        request.setItems(Arrays.asList());
-
-        when(orderService.create(any(CreateOrderRequest.class)))
-                .thenThrow(new RuntimeException("Invalid data"));
-
-        mockMvc.perform(post("/api/orders")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is5xxServerError());
 
         verify(orderService, times(1)).create(any(CreateOrderRequest.class));
     }

@@ -2,7 +2,6 @@ package attestation_finalProject.repository;
 
 import attestation_finalProject.entity.Order;
 import attestation_finalProject.entity.Pizza;
-import attestation_finalProject.repository.OrderRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -23,7 +22,7 @@ class OrderRepositoryTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private OrderRepository orderRepository;
+    private attestation_finalProject.repository.OrderRepository orderRepository;
 
     @Test
     void findAllActive_ShouldReturnOnlyActiveOrders() {

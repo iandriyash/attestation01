@@ -1,7 +1,6 @@
 package attestation_finalProject.repository;
 
 import attestation_finalProject.entity.Pizza;
-import attestation_finalProject.repository.PizzaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,7 +21,7 @@ class PizzaRepositoryTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private PizzaRepository pizzaRepository;
+    private attestation_finalProject.repository.PizzaRepository pizzaRepository;
 
     @Test
     void findAllActive_ShouldReturnOnlyActivePizzas() {
