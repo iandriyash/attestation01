@@ -15,14 +15,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Простейший smoke-тест без поднятия Spring-контекста.
- * Проверяем, что PizzaController создаётся и готов к использованию.
+ * Простейшие smoke-тесты PizzaController без поднятия контекста.
  */
 @ExtendWith(MockitoExtension.class)
 class PizzaControllerSmokeTest {
@@ -47,15 +47,16 @@ class PizzaControllerSmokeTest {
     }
 
     @Test
-    @DisplayName("GET /api/pizzas -> 200 и пустой список")
-    void getAllPizzas_returnsEmptyList() throws Exception {
-        // given
+    @DisplayName("GET /api/pizzas — 200 и пустой список")
+    void getAllPizzas_noParams_returnsEmptyList() throws Exception {
+        // предполагаем сигнатуру pizzaService.getAll() без аргументов
         when(pizzaService.getAll()).thenReturn(Collections.emptyList());
 
-        // when / then
         mockMvc.perform(get("/api/pizzas").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json("[]"));
+
+        verify(pizzaService, times(1)).getAll();
     }
 }

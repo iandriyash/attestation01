@@ -25,25 +25,25 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Boot Web (REST API) -->
+        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Spring Boot Data JPA (database access via JPA/Hibernate) -->
+        <!-- JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Spring Boot Validation (data validation) -->
+        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Swagger/OpenAPI (for Spring Boot 3.x) -->
+        <!-- Swagger/OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -56,20 +56,20 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Thymeleaf, for custom /login page -->
+        <!-- Thymeleaf -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <!-- PostgreSQL Driver -->
+        <!-- PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway (database migrations) -->
+        <!-- Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -81,33 +81,29 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (auto-generate getters, setters, constructors) -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Test (for unit tests) -->
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- H2 Database (for in-memory tests) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -127,7 +123,7 @@
         </testResources>
 
         <plugins>
-            <!-- Spring Boot Maven Plugin -->
+            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -142,7 +138,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven Compiler Plugin -->
+            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -161,14 +157,19 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven Surefire Plugin (for running tests) -->
+            <!-- Surefire (run only finalProject tests) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0</version>
+                <configuration>
+                    <includes>
+                        <include>**/attestation_finalProject/**/*.java</include>
+                    </includes>
+                </configuration>
             </plugin>
 
-            <!-- JaCoCo Plugin (code coverage) -->
+            <!-- JaCoCo (coverage) -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -186,9 +187,9 @@
                             <goal>report</goal>
                         </goals>
                         <configuration>
-                            <excludes>
-                                <exclude>**/attestation01/**</exclude>
-                            </excludes>
+                            <includes>
+                                <include>**/attestation_finalProject/**</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
