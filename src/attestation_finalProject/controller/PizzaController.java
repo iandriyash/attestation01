@@ -43,7 +43,6 @@ public class PizzaController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<PizzaDto> getById(@PathVariable Long id) {
-        // 200 с телом либо 404 — без конфликтов дженериков
         return ResponseEntity.of(pizzaService.getById(id));
     }
 
