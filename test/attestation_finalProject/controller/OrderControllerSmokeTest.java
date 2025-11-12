@@ -7,6 +7,9 @@ import attestation_finalProject.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -28,7 +31,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Smoke-тест для OrderController.
  * Проверяем создание заказа (POST) и получение заказа (GET).
  */
-@WebMvcTest(controllers = OrderController.class)
+@WebMvcTest(
+        controllers = OrderController.class,
+        excludeAutoConfiguration = {
+                HibernateJpaAutoConfiguration.class,
+                DataSourceAutoConfiguration.class
+        }
+)
+@AutoConfigureMockMvc(addFilters = false) // отключаем security-фильтры в web-срезе
 class OrderControllerSmokeTest {
 
     @Autowired
@@ -43,7 +53,7 @@ class OrderControllerSmokeTest {
     @Test
     @WithMockUser
     void createOrder_ShouldReturn201Created() throws Exception {
-        // Given - подготовим запрос на создание заказа
+        // Given
         CreateOrderRequest request = new CreateOrderRequest();
         request.setCustomerName("Иван Иванов");
         request.setCustomerPhone("+79991234567");
@@ -51,15 +61,10 @@ class OrderControllerSmokeTest {
         OrderItemDto item = new OrderItemDto(1L, 2, BigDecimal.valueOf(450));
         request.setItems(Arrays.asList(item));
 
-        // Given - мокаем ответ сервиса
         OrderDto createdOrder = new OrderDto(
-                1L,
-                "Иван Иванов",
-                "+79991234567",
-                BigDecimal.valueOf(900),
-                "NEW",
-                LocalDateTime.now(),
-                Arrays.asList(item)
+                1L, "Иван Иванов", "+79991234567",
+                BigDecimal.valueOf(900), "NEW",
+                LocalDateTime.now(), Arrays.asList(item)
         );
         when(orderService.create(any(CreateOrderRequest.class))).thenReturn(createdOrder);
 
@@ -80,13 +85,9 @@ class OrderControllerSmokeTest {
         // Given
         OrderItemDto item = new OrderItemDto(1L, 2, BigDecimal.valueOf(450));
         OrderDto order = new OrderDto(
-                1L,
-                "Иван Иванов",
-                "+79991234567",
-                BigDecimal.valueOf(900),
-                "NEW",
-                LocalDateTime.now(),
-                Arrays.asList(item)
+                1L, "Иван Иванов", "+79991234567",
+                BigDecimal.valueOf(900), "NEW",
+                LocalDateTime.now(), Arrays.asList(item)
         );
         when(orderService.getById(1L)).thenReturn(Optional.of(order));
 
@@ -103,13 +104,9 @@ class OrderControllerSmokeTest {
         // Given
         OrderItemDto item = new OrderItemDto(1L, 2, BigDecimal.valueOf(450));
         OrderDto order = new OrderDto(
-                1L,
-                "Иван Иванов",
-                "+79991234567",
-                BigDecimal.valueOf(900),
-                "NEW",
-                LocalDateTime.now(),
-                Arrays.asList(item)
+                1L, "Иван Иванов", "+79991234567",
+                BigDecimal.valueOf(900), "NEW",
+                LocalDateTime.now(), Arrays.asList(item)
         );
         when(orderService.getAll(null, null)).thenReturn(Arrays.asList(order));
 
