@@ -26,7 +26,11 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults()) // удобно для Postman/Swagger
-                .formLogin(form -> form.loginPage("/login").permitAll())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)   // ← после успешного логина идём на главную
+                        .permitAll()
+                )
                 .logout(Customizer.withDefaults());
         return http.build();
     }
