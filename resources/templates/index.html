@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Пиццерия — Главная</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 3rem auto; }
+        h1 { margin-bottom: .5rem; }
+        h2 { margin-top: 2rem; }
+        a.button {
+            display: inline-block;
+            margin-top: 1rem;
+            margin-right: 1rem;
+            padding: .6rem 1rem;
+            text-decoration: none;
+            border: 1px solid #444;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Пиццерия</h1>
+<p>Вы успешно вошли в систему. Это главная страница приложения.</p>
+
+<h2>Навигация</h2>
+<p>
+    <!-- сюда поставь реальные маршруты контроллеров, если уже есть -->
+    <a class="button" href="/api/pizzas" target="_blank">Каталог пицц (API)</a>
+    <a class="button" href="/swagger-ui/index.html" target="_blank">Swagger UI</a>
+</p>
+
+</body>
+</html>
