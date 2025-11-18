@@ -20,8 +20,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..                # корень проекта (там pom.xml и src)
+      dockerfile: docker/Dockerfile
     container_name: pizzeria-app
     depends_on:
       db:
