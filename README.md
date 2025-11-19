@@ -1,225 +1,422 @@
-Pizzeria Application
-1. Описание проекта
+# Pizzeria Application
 
-Проект реализует серверную часть веб-приложения для онлайн-заказа пиццы.
-Приложение построено на Java 17 с использованием Spring Boot 3.2.0.
-Основные функции: управление меню пицц, создание и обработка заказов, поиск и мягкое удаление записей.
+Backend веб-приложения для онлайн-заказа пиццы на Java 17 / Spring Boot 3
 
-Архитектура основана на паттерне MVC и разделена на слои Controller, Service, Repository, Entity и DTO.
+Приложение предоставляет REST API для работы с каталогом пицц и заказами. Архитектура — слоистая (MVC): **Controller → Service → Repository → Entity/DTO**, с валидацией данных, централизованной обработкой ошибок, безопасностью и миграциями БД.
 
-2. Технологии и инструменты
+---
 
-Java 17
+## Описание проекта
 
-Spring Boot 3.2.0
+Кратко:
 
-Spring Web
+- управление каталогом пицц (CRUD-операции);
+- создание и обработка заказов с расчётом итоговой стоимости;
+- мягкое удаление записей (soft delete) через `isDeleted` для сохранения истории;
+- валидация входных данных и единый формат ошибок;
+- авторизация через Spring Security (HTTP Basic + form-login);
+- документация API через Swagger UI;
+- миграции схемы БД через Flyway;
+- комплексное тестирование (unit + smoke).
 
-Spring Data JPA (Hibernate)
+---
 
-PostgreSQL
+## Технологический стек
 
-Flyway
+**Backend**
 
-Maven
+- Java 17 (LTS)
+- Spring Boot 3.x
+    - Spring Web (REST API, встроенный Tomcat)
+    - Spring Data JPA (ORM через Hibernate)
+    - Spring Security (аутентификация, авторизация)
+    - Validation (Bean Validation API)
 
-Lombok
+**База данных**
 
-JUnit 5, Spring Boot Test, H2 Database
+- PostgreSQL (основная БД)
+- H2 (in-memory для тестов)
+- Flyway (миграции)
+- HikariCP (connection pool)
 
-JaCoCo (покрытие тестов)
+**Документация и тесты**
 
-3. Структура проекта
+- springdoc-openapi (Swagger UI / OpenAPI 3)
+- JUnit 5
+- Mockito
+- MockMvc
+- JaCoCo (покрытие кода)
 
-Controller — REST API для работы с заказами и пиццами
+**Сборка и инфраструктура**
 
-Service — бизнес-логика: валидация данных, расчеты, операции с БД
+- Maven
+- Lombok
+- Docker, Docker Compose
 
-Repository — интерфейсы доступа к данным через Spring Data JPA
 
-Entity — классы-сущности, отображающие таблицы БД
+## Архитектура приложения
 
-DTO — классы передачи данных между слоями и внешними клиентами
+Слоистая структура:
 
-Utils — вспомогательные методы (валидация и проверки)
+┌───────────────────────────────┐
+│   Controller (REST API)       │  ← HTTP-запросы
+├───────────────────────────────┤
+│   Service (бизнес-логика)     │  ← транзакции, валидация
+├───────────────────────────────┤
+│   Repository (доступ к данным)│  ← Spring Data JPA
+├───────────────────────────────┤
+│   Entity / DTO                │  ← доменная модель и API-модели
+├───────────────────────────────┤
+│   PostgreSQL                  │  ← хранение данных
+└───────────────────────────────┘
+Контроллеры (src/attestation/attestation_finalProject/controller)
+PizzaController (/api/pizzas)
 
-Resources — миграции Flyway, конфигурационные файлы
+GET /api/pizzas — список всех пицц
 
-Tests — unit и integration тесты
+GET /api/pizzas/{id} — получить пиццу по ID
 
-4. Основные компоненты
+POST /api/pizzas — создать новую пиццу
 
-PizzaController
-Обрабатывает запросы к API пицц. Методы:
-
-GET /api/pizzas — получение всех пицц
-
-GET /api/pizzas/{id} — получение пиццы по ID
-
-POST /api/pizzas — создание новой пиццы
-
-PUT /api/pizzas/{id} — обновление данных пиццы
+PUT /api/pizzas/{id} — обновить пиццу
 
 DELETE /api/pizzas/{id} — мягкое удаление (soft delete)
 
-OrderController
-Управляет заказами. Методы:
+OrderController (/api/orders)
 
-POST /api/orders — создание нового заказа
+POST /api/orders — создать заказ из CreateOrderRequest
 
-GET /api/orders — получение списка заказов
+GET /api/orders — список заказов (опционально: фильтры по статусу/телефону)
 
-GET /api/orders/{id} — получение заказа по ID
+GET /api/orders/{id} — получить заказ по ID
 
-PATCH /api/orders/{id}/status — изменение статуса заказа
+PATCH /api/orders/{id}/status — изменить статус заказа
 
-DELETE /api/orders/{id} — мягкое удаление заказа
+DELETE /api/orders/{id} — мягкое удаление
 
-Service слой
-Содержит бизнес-логику:
+AuthController
 
-Валидация входных данных
+GET /login — страница логина (Thymeleaf)
 
-Расчет общей стоимости заказа
+HomeController
 
-Фильтрация только активных сущностей
+GET / — главная страница (демо / index)
 
-Управление статусами заказов
+Сервисы (src/attestation/attestation_finalProject/service)
+PizzaService
 
-Repository слой
-Интерфейсы PizzaRepository, OrderRepository, OrderItemRepository реализуют доступ к данным.
-Используются Derived Queries и JPQL для выборки только активных записей (isDeleted = false).
+операции с каталогом пицц;
 
-Entity слой
+валидация данных;
 
-Pizza: id, name, description, price, isDeleted, createdAt
+работа только с активными пиццами (isDeleted = false).
 
-Order: id, customerName, customerPhone, totalPrice, status, isDeleted, createdAt
+OrderService
 
-OrderItem: id, order, pizza, quantity, price
+сценарий «Оформить заказ»:
 
-DTO слой
+валидация входных данных (имя, телефон, quantity > 0);
 
-PizzaDto, OrderDto, OrderItemDto — для ответа клиенту
+загрузка пицц по pizzaId из БД;
 
-CreateOrderRequest — для приема JSON-запроса
+расчёт lineTotal и totalPrice (price snapshot);
 
-5. Работа с базой данных
+сохранение Order и OrderItem в одной транзакции (@Transactional);
 
-Используется PostgreSQL
+маппинг сущностей в OrderDto.
 
-Структура БД создается автоматически с помощью Flyway
+Репозитории (src/attestation/attestation_finalProject/repository)
+PizzaRepository extends JpaRepository<Pizza, Long>
 
-Все сущности содержат флаг isDeleted для реализации soft delete
+OrderRepository extends JpaRepository<Order, Long>
 
-Для тестов используется встроенная БД H2
+OrderItemRepository extends JpaRepository<OrderItem, Long>
 
-6. Запуск проекта
+Пример учёта soft-delete:
 
-Установить PostgreSQL и создать базу данных pizzeria
+java
+Копировать код
+List<Pizza> findByIsDeletedFalse();
+Сущности (src/attestation/attestation_finalProject/entity)
+Pizza — id, name, description, price, isDeleted, createdAt
 
-Настроить подключение в application.yml
+Order — id, customerName, customerPhone, totalPrice, status, isDeleted, createdAt, items
 
-Собрать проект через Maven
+OrderItem — id, order, pizza, quantity, priceSnapshot, lineTotal
+
+DTO-модели (src/attestation/attestation_finalProject/dto)
+PizzaDto — данные пиццы в API
+
+OrderItemDto — позиция заказа (pizzaId, name, quantity, price, lineTotal)
+
+OrderDto — заказ (id, status, totalPrice, createdAt, items[])
+
+CreateOrderRequest — входящий запрос (customerName, customerPhone, items[pizzaId, quantity>0])
+
+DTO отделяют внутреннюю модель БД от внешнего API, скрывают служебные поля (isDeleted и т.п.) и позволяют развивать схему без поломки контрактов.
+
+Конфиг и утилиты (src/attestation/attestation_finalProject/config, .../utils, .../exception)
+OpenApiConfig — настройка springdoc / Swagger
+
+SecurityConfig — правила доступа, HTTP Basic/Auth, form-login
+
+ValidationUtils — проверки телефонов, имён и пр.
+
+GlobalExceptionHandler, NotFoundException, ValidationException — единый формат ошибок для API
+
+Модель данных
+Фактическая структура (как в resources/db.migration):
+
+text
+Копировать код
+┌──────────────┐        ┌────────────────────┐        ┌──────────────┐
+│   pizzas     │        │    order_items     │        │    orders    │
+├──────────────┤        ├────────────────────┤        ├──────────────┤
+│ id (PK)      │◄───────┤ pizza_id (FK)      │        │ id (PK)      │
+│ name         │        │ order_id (FK) ─────┼──────► │ customer_name│
+│ description  │        │ quantity           │        │ customer_phone
+│ price        │        │ price_snapshot     │        │ total_price  │
+│ is_deleted   │        │ line_total         │        │ status       │
+│ created_at   │        └────────────────────┘        │ is_deleted   │
+└──────────────┘                                      │ created_at   │
+                                                      └──────────────┘
+Миграции (каталог resources/db.migration/):
+
+V1__create_pizzas_table.sql — таблица pizzas + стартовые записи
+
+V2__create_orders_table.sql — таблица orders (статус по умолчанию NEW)
+
+V3__create_order_items_table.sql — таблица order_items c FK order_id, pizza_id, полями quantity, price_snapshot, line_total
+
+Конфигурация и запуск
+Файлы конфигурации (как в проекте)
+resources/application.properties — профиль по умолчанию (local)
+
+resources/application-docker.properties — настройки для запуска в Docker
+
+test/resources/application-test.properties — профиль тестов (H2 и тише логи)
+
+Пример application.properties:
+
+properties
+
+spring.datasource.url=jdbc:postgresql://localhost:5433/pizzeria_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.open-in-view=false
+
+spring.flyway.enabled=true
+# spring.flyway.locations=classpath:db.migration
+Локальный запуск
+Требования:
+
+Java 17+
+
+Maven
+
+PostgreSQL
+
+(опционально) Docker
+
+1. Создать базу:
+
+sql
+
+CREATE DATABASE pizzeria_db;
+2. Проверить настройки в resources/application.properties
+(см. пример выше).
+
+3. Собрать и запустить:
+
+bash
 
 mvn clean install
-
-
-Запустить приложение
-
 mvn spring-boot:run
+Приложение: http://localhost:8080
+Swagger UI: http://localhost:8080/swagger-ui/index.html
 
+Запуск через Docker Compose
+Каталог docker/:
 
-Приложение будет доступно по адресу
+docker-compose.yml
 
-http://localhost:8080
+Dockerfile
 
-7. Примеры запросов
+Команды:
 
-Создание заказа (POST /api/orders)
+bash
+Копировать код
+# остановка старых контейнеров (если есть)
+docker-compose down
+
+# очистка/сборка и запуск
+docker-compose up --build
+Результат:
+
+PostgreSQL — localhost:5433
+
+Spring Boot — http://localhost:8080
+
+Swagger UI — http://localhost:8080/swagger-ui/index.html
+
+Документация и использование API
+Swagger UI:
+http://localhost:8080/swagger-ui/index.html
+
+Авторизация: HTTP Basic для /api/**
+
+Тестовые пользователи:
+
+admin / admin123 (ROLE_ADMIN)
+
+user / user123 (ROLE_USER)
+
+Примеры:
+
+GET /api/pizzas — список пицц
+
+http
+
+GET /api/pizzas
+Authorization: Basic dXNlcjp1c2VyMTIz
+POST /api/orders — создание заказа
+
+http
+
+POST /api/orders
+Content-Type: application/json
+Authorization: Basic dXNlcjp1c2VyMTIz
+json
 
 {
-"customerName": "Иван Иванов",
-"customerPhone": "+79991234567",
-"items": [
-{"pizzaId": 1, "quantity": 2},
-{"pizzaId": 2, "quantity": 1}
-]
+  "customerName": "Иван Иванов",
+  "customerPhone": "+79991234567",
+  "items": [
+    { "pizzaId": 1, "quantity": 2 },
+    { "pizzaId": 2, "quantity": 1 }
+  ]
 }
+Тестирование
 
+test/
+├─ attestation/              # промежуточная аттестация №1
+├─ attestation01.model/      # промежуточная аттестация №2
+├─ attestation03/            # промежуточная аттестация №3
+├─ attestation_finalProject/ # итоговоая аттестация
+│  ├─ controller/
+│  │  ├─ OrderControllerSmokeTest.java
+│  │  └─ PizzaControllerSmokeTest.java
+│  ├─ repository/
+│  │  ├─ OrderRepositorySmokeTest.java
+│  │  └─ PizzaRepositorySmokeTest.java
+│  └─ service/
+│     ├─ OrderServiceTest.java
+│     └─ PizzaServiceTest.java
+└─ resources/
+   └─ application-test.properties
+Типы тестов
+Unit-тесты сервисов (OrderServiceTest, PizzaServiceTest)
+Используют Mockito: мок репозиториев, проверка бизнес-инвариантов (расчёт суммы, обработка ошибок, валидация).
 
-Ответ (201 Created)
+Smoke / slice-тесты контроллеров (OrderControllerSmokeTest, PizzaControllerSmokeTest)
+Используют MockMvc: проверка HTTP-контрактов (status, структура JSON, ошибки валидации).
 
-{
-"id": 3,
-"customerName": "Иван Иванов",
-"totalPrice": 1450.00,
-"status": "NEW",
-"createdAt": "2025-11-04T19:24:00"
-}
+Smoke-тесты репозиториев (OrderRepositorySmokeTest, PizzaRepositorySmokeTest)
+Проверка запросов к БД, работы с флагом isDeleted на H2 по профилю test.
 
-8. Тестирование
+Запуск тестов:
 
-Репозитории тестируются через @DataJpaTest с H2
+bash
+Копировать код
+mvn test
+# или с отчётом покрытия
+mvn clean test jacoco:report
+Отчёт JaCoCo: target/site/jacoco/index.html
 
-Сервисы и контроллеры — через @SpringBootTest и MockMvc
+Структура проекта (как в IDEA)
+text
+Копировать код
+attestation01/
+├─ .idea/
+├─ docker/
+│  ├─ docker-compose.yml
+│  └─ Dockerfile
+├─ postman/
+│  └─ Pizzeria.postman_collection.json
+├─ resources/
+│  ├─ db.migration/
+│  │  ├─ V1__create_pizzas_table.sql
+│  │  ├─ V2__create_orders_table.sql
+│  │  └─ V3__create_order_items_table.sql
+│  ├─ static.css/                 # стили (кастомное имя каталога)
+│  ├─ templates/
+│  │  ├─ index.html
+│  │  └─ login.html
+│  ├─ application.properties
+│  ├─ application-docker.properties
+│  └─ login.html                   # дополнительный шаблон (legacy/demo)
+├─ src/
+│  └─ attestation/
+│     └─ attestation_finalProject/
+│        ├─ config/
+│        │  ├─ OpenApiConfig.java
+│        │  └─ SecurityConfig.java
+│        ├─ controller/
+│        │  ├─ AuthController.java
+│        │  ├─ HomeController.java
+│        │  ├─ OrderController.java
+│        │  └─ PizzaController.java
+│        ├─ dto/
+│        │  ├─ CreateOrderRequest.java
+│        │  ├─ OrderDto.java
+│        │  ├─ OrderItemDto.java
+│        │  └─ PizzaDto.java
+│        ├─ entity/
+│        │  ├─ Order.java
+│        │  ├─ OrderItem.java
+│        │  └─ Pizza.java
+│        ├─ exception/
+│        │  ├─ GlobalExceptionHandler.java
+│        │  ├─ NotFoundException.java
+│        │  └─ ValidationException.java
+│        ├─ repository/
+│        │  ├─ OrderItemRepository.java
+│        │  ├─ OrderRepository.java
+│        │  └─ PizzaRepository.java
+│        ├─ service/
+│        │  ├─ OrderService.java
+│        │  └─ PizzaService.java
+│        ├─ utils/
+│        │  └─ ValidationUtils.java
+│        ├─ Main.java
+│        └─ PizzeriaApplication.java
+├─ target/                         # артефакты сборки Maven
+├─ test/                           # см. структуру тестов выше
+│  ├─ attestation/
+│  ├─ attestation01.model/
+│  ├─ attestation03/
+│  ├─ attestation_finalProject/
+│  └─ resources/
+├─ ATTESTATION03_REPORT.md
+├─ README.md
+├─ pom.xml
+└─ users.txt
+Возможные направления развития
+JWT-авторизация и личный кабинет пользователя
 
-Покрытие кода измеряется через JaCoCo
+интеграция с платёжными системами (webhook’и, статусы оплаты)
 
-Общий набор тестов: 55
+пагинация и расширенные фильтры для списка заказов
 
-Покрытие по классам — 32%
+вынесение фронтенда в отдельное SPA-приложение
 
-Сервисы — 85%
+Testcontainers (PostgreSQL в интеграционных тестах)
 
-Контроллеры — 96%
+мониторинг (Spring Boot Actuator, Prometheus, Grafana)
 
-9. Особенности реализации
-
-Soft Delete: логическое удаление через флаг isDeleted
-
-DTO слой изолирует внутреннюю структуру БД от API
-
-Flyway гарантирует идентичную структуру схемы на всех окружениях
-
-Логирование реализовано через Lombok Slf4j
-
-Используется паттерн Dependency Injection
-
-Все методы репозиториев работают только с активными записями
-
-Валидация данных вынесена в отдельный утилитарный класс
-
-10. Результаты
-
-Проект соответствует требованиям промежуточной аттестации Модуль 3.
-Реализован полный цикл CRUD-операций, миграции, soft delete и тестовое покрытие.
-Структура кода соответствует шаблону MVC и требованиям Spring Boot.
-
-11. Заключение
-
-Проект реализует полноценное серверное приложение на Java с использованием Spring Boot и соответствует требованиям промышленной разработки.
-
-Архитектура построена на шаблоне MVC и разделяет ответственность между слоями Controller, Service, Repository и Entity, что обеспечивает читаемость и расширяемость кода.
-
-Использование Spring Data JPA позволило отказаться от ручного написания SQL-запросов и обеспечило безопасную работу с базой данных PostgreSQL.
-
-Миграции Flyway гарантируют воспроизводимость структуры базы данных и упрощают развертывание приложения на других средах.
-
-Реализованный DTO слой позволяет изолировать внутренние модели данных от внешнего API и делает систему гибкой при изменениях в структуре БД.
-
-Soft delete обеспечивает сохранение истории данных и удобство при тестировании и восстановлении записей.
-
-Проведено модульное тестирование всех основных компонентов приложения. Тесты покрывают бизнес-логику, репозитории и контроллеры, обеспечивая стабильность и предсказуемость работы системы.
-
-Приложение успешно взаимодействует с клиентами через REST API, что подтверждено ручным и автоматическим тестированием.
-
-Код оформлен в соответствии со стандартами Java и Spring, включает логирование, обработку ошибок и тестовое покрытие.
-
-Разработанная система может быть расширена за счет добавления аутентификации пользователей, интеграции с фронтендом и внедрения Docker контейнеризации.
-
-Итог:
-Проект Pizzeria демонстрирует владение основными технологиями экосистемы Spring, принципами построения REST API и практиками промышленной разработки Java-приложений. Реализация охватывает все ключевые аспекты серверной части — от архитектуры и хранения данных до тестирования и развертывания.
-
-Дополнительно см. отчет по аттестации:
-ATTESTATION03_REPORT.md
+Автор
+Андреев
+Итоговая аттестационная работа по курсу «Java-разработчик. Базовый курс»
+2025 год
