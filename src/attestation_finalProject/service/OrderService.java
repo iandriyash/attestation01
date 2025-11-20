@@ -45,16 +45,31 @@ public class OrderService {
 
     @Transactional
     public OrderDto create(CreateOrderRequest request) {
+        // 1. Создаём объект Order (но НЕ сохраняем сразу)
         Order order = new Order();
         order.setCustomerName(request.getCustomerName());
         order.setCustomerPhone(request.getCustomerPhone());
         order.setStatus("NEW");
         order.setIsDeleted(false);
 
-        // создаём, чтобы получить id для связи с items
+        // 2. Рассчитываем totalPrice ПЕРЕД сохранением
+        BigDecimal total = BigDecimal.ZERO;
+        for (OrderItemDto itemDto : request.getItems()) {
+            Pizza pizza = pizzaRepository.findByIdActive(itemDto.getPizzaId())
+                    .orElseThrow(() -> new RuntimeException("Пицца не найдена: " + itemDto.getPizzaId()));
+
+            // Берём цену из пиццы
+            BigDecimal itemPrice = pizza.getPrice();
+            total = total.add(itemPrice.multiply(BigDecimal.valueOf(itemDto.getQuantity())));
+        }
+
+        // 3. Устанавливаем totalPrice ПЕРЕД сохранением
+        order.setTotalPrice(total);
+
+        // 4. Сохраняем заказ ОДИН РАЗ с полными данными
         order = orderRepository.save(order);
 
-        BigDecimal total = BigDecimal.ZERO;
+        // 5. Теперь создаём items (у order уже есть id)
         for (OrderItemDto itemDto : request.getItems()) {
             Pizza pizza = pizzaRepository.findByIdActive(itemDto.getPizzaId())
                     .orElseThrow(() -> new RuntimeException("Пицца не найдена: " + itemDto.getPizzaId()));
@@ -63,14 +78,10 @@ public class OrderService {
             item.setOrder(order);
             item.setPizza(pizza);
             item.setQuantity(itemDto.getQuantity());
-            item.setPrice(itemDto.getPrice()); // можно взять из pizza.getPrice()
+            item.setPrice(pizza.getPrice()); // берём актуальную цену из пиццы
             orderItemRepository.save(item);
-
-            total = total.add(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
-        order.setTotalPrice(total);
-        order = orderRepository.save(order);
         return toDto(order);
     }
 
